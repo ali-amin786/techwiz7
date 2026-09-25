@@ -103,9 +103,13 @@ CREATE TABLE events (
     category_id INT NOT NULL,
     title VARCHAR(150) NOT NULL,
     city VARCHAR(100) NOT NULL,
+    venue_location VARCHAR(255) NULL,
     latitude DECIMAL(10,7) NOT NULL,
     longitude DECIMAL(10,7) NOT NULL,
     event_date DATE NOT NULL,
+    event_time VARCHAR(100) NULL,
+    event_day VARCHAR(50) NULL,
+    description TEXT NULL,
     ticket_link VARCHAR(255) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
@@ -209,9 +213,10 @@ INSERT INTO merchandise_items (category_id, title, description, tag, image, view
 (1, 'Blade Crest Pin', 'Enamel pin from the Neon Blade drop.', 'Limited Edition', 'default-merch.jpg', 4, 0, NULL),
 (5, 'Comeback Lightstick', 'Pre-order lightstick for the autumn tour.', 'Pre-Order', 'default-merch.jpg', 7, 1, '2026-10-01');
 
-INSERT INTO events (category_id, title, city, latitude, longitude, event_date, ticket_link) VALUES
-(8, 'Karachi Cosplay Meet', 'Karachi', 24.8607000, 67.0011000, '2026-11-14', 'https://example.com/tickets/khi'),
-(2, 'Lahore Game Con', 'Lahore', 31.5204000, 74.3587000, '2026-12-05', 'https://example.com/tickets/lhr');
+INSERT INTO events (category_id, title, city, venue_location, latitude, longitude, event_date, event_time, event_day, description, ticket_link) VALUES
+(8, 'Karachi Cosplay Meet', 'Karachi', 'Expo Centre, Hall 2, Main University Road, Karachi', 24.8607000, 67.0011000, '2026-11-14', '02:00 PM - 09:00 PM', 'Saturday', 'Grand cosplay runway, photography zones, voice actor panels, and anime merch stalls.', 'https://example.com/tickets/khi'),
+(2, 'Lahore Game Con', 'Lahore', 'Lahore Expo Center, Hall 1, Johar Town, Lahore', 31.5204000, 74.3587000, '2026-12-05', '11:00 AM - 08:00 PM', 'Sunday', 'Esports finals, indie gaming pavilion, retro arcade lounge, and cosplay tournaments.', 'https://example.com/tickets/lhr'),
+(1, 'Islamabad Anime & K-Pop Gala', 'Islamabad', 'Pak-China Friendship Center, Garden Avenue, Islamabad', 33.6938000, 73.0652000, '2026-11-28', '03:00 PM - 10:00 PM', 'Saturday', 'Screening of top anime movies, K-Pop dance cover competition, and artist alley.', 'https://example.com/tickets/isb');
 
 INSERT INTO chatbot_faqs (question, keywords, answer) VALUES
 ('How do I create an account?', 'register,signup,account', 'Open Register, choose a unique username, and submit. New posts start as pending until an admin approves them.'),

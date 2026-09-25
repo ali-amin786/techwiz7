@@ -65,10 +65,61 @@
         });
         if (!res.ok) return;
         const data = await res.json();
-        btn.classList.toggle('is-saved', data.status === 'saved');
-        btn.textContent = data.status === 'saved' ? 'Saved' : 'Save';
+        const isSaved = data.status === 'saved';
+        btn.classList.toggle('is-saved', isSaved);
+        btn.classList.toggle('btn-accent', isSaved);
+        btn.classList.toggle('btn-ghost', !isSaved);
+        btn.textContent = isSaved ? '★ Saved' : '☆ Save';
+
+        // Update sidebar saved count if element exists
+        const countSpan = document.getElementById('sidebarSavedCount');
+        if (countSpan && data.total_bookmarks !== undefined) {
+          countSpan.textContent = data.total_bookmarks;
+        }
       } catch (err) {
-        /* endpoint lands in Section B */
+        console.error('Bookmark error:', err);
+      }
+    });
+  });
+
+  // Interactive Star Rating Submission
+  document.querySelectorAll('.star-rating input').forEach((radio) => {
+    radio.addEventListener('change', async (e) => {
+      if (document.body.dataset.auth !== '1') {
+        guestModal?.show();
+        e.preventDefault();
+        return;
+      }
+      const form = radio.closest('form') || radio.closest('.rating-container');
+      const postId = form?.dataset.postId || radio.name.replace('rating_', '');
+      const stars = radio.value;
+      const csrf = document.querySelector('meta[name="csrf-token"]')?.content
+        || document.querySelector('input[name="csrf_token"]')?.value;
+
+      try {
+        const res = await fetch('rate-media.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            post_id: postId,
+            rating_stars: stars,
+            csrf_token: csrf || ''
+          }),
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          const avgLabel = document.getElementById(`avgRating_${postId}`);
+          if (avgLabel) {
+            avgLabel.textContent = `${data.avg_rating} / 5 (${data.total_ratings} votes)`;
+          }
+          const userLabel = document.getElementById(`userRatingFeedback_${postId}`);
+          if (userLabel) {
+            userLabel.textContent = `You rated this ${stars} ★`;
+            userLabel.classList.remove('d-none');
+          }
+        }
+      } catch (err) {
+        console.error('Rating error:', err);
       }
     });
   });

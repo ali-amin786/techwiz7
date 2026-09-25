@@ -77,7 +77,7 @@ function avatar_url(?string $profilePic, string $username): string
     $file = trim((string) $profilePic);
     $path = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'avatars' . DIRECTORY_SEPARATOR . $file;
     if ($file === '' || $file === 'default-avatar.png' || !is_file($path)) {
-        return 'https://ui-avatars.com/api/?name=' . rawurlencode($username) . '&background=8b5cf6&color=fff';
+        return 'https://ui-avatars.com/api/?name=' . rawurlencode($username) . '&background=10b981&color=0d0e12';
     }
     return url('uploads/avatars/' . rawurlencode($file));
 }
@@ -145,3 +145,119 @@ function category_default_thumbnail(PDO $pdo, int $categoryId): string
     $row = $stmt->fetch();
     return $row['default_thumbnail'] ?? 'default-category.jpg';
 }
+
+function is_bookmarked(PDO $pdo, int $postId, ?int $userId): bool
+{
+    if (!$userId) {
+        return false;
+    }
+    $stmt = $pdo->prepare('SELECT id FROM bookmarks WHERE user_id = ? AND post_id = ? LIMIT 1');
+    $stmt->execute([$userId, $postId]);
+    return (bool) $stmt->fetchColumn();
+}
+
+function increment_post_views(PDO $pdo, int $postId): void
+{
+    $sessionKey = 'viewed_post_' . $postId;
+    if (empty($_SESSION[$sessionKey])) {
+        $_SESSION[$sessionKey] = true;
+        $stmt = $pdo->prepare('UPDATE posts SET views = views + 1, popularity = popularity + 1 WHERE id = ?');
+        $stmt->execute([$postId]);
+    }
+}
+
+function get_post_rating_summary(PDO $pdo, int $postId): array
+{
+    $stmt = $pdo->prepare('SELECT COUNT(*) as count, AVG(rating_stars) as avg_rating FROM media_ratings WHERE post_id = ?');
+    $stmt->execute([$postId]);
+    $row = $stmt->fetch();
+    return [
+        'count' => (int) ($row['count'] ?? 0),
+        'avg' => $row['avg_rating'] !== null ? round((float) $row['avg_rating'], 1) : 0,
+    ];
+}
+
+function get_user_rating(PDO $pdo, int $postId, ?int $userId): ?int
+{
+    if (!$userId) {
+        return null;
+    }
+    $stmt = $pdo->prepare('SELECT rating_stars FROM media_ratings WHERE user_id = ? AND post_id = ? LIMIT 1');
+    $stmt->execute([$userId, $postId]);
+    $stars = $stmt->fetchColumn();
+    return $stars !== false ? (int) $stars : null;
+}
+
+function category_color(string $slug): string
+{
+    $map = [
+        'anime'    => 'from-emerald to-cyan',
+        'gaming'   => 'from-cyan to-blue',
+        'movies'   => 'from-amber to-rose',
+        'tv-shows' => 'from-sky to-indigo',
+        'k-pop'    => 'from-teal to-emerald',
+        'comics'   => 'from-red to-orange',
+        'manga'    => 'from-emerald to-teal',
+        'cosplay'  => 'from-cyan to-emerald',
+    ];
+    return $map[strtolower($slug)] ?? 'from-emerald to-cyan';
+}
+
+function category_icon(string $slug): string
+{
+    $map = [
+        'anime'    => '✨',
+        'gaming'   => '🎮',
+        'movies'   => '🎬',
+        'tv-shows' => '📺',
+        'k-pop'    => '🎵',
+        'comics'   => '💥',
+        'manga'    => '📖',
+        'cosplay'  => '🎭',
+    ];
+    return $map[strtolower($slug)] ?? '🌟';
+}
+
+function render_card_visual(string $categoryName, string $categorySlug, string $type = 'article', ?string $thumbnail = null): string
+{
+    $file = trim((string) $thumbnail);
+    $real = $file !== '' ? UPLOAD_PATH . DIRECTORY_SEPARATOR . 'thumbnails' . DIRECTORY_SEPARATOR . $file : '';
+    if ($file !== '' && $file !== 'default-category.jpg' && is_file($real)) {
+        return '<img class="card-img-top" src="' . e(url('uploads/thumbnails/' . rawurlencode($file))) . '" alt="' . e($categoryName) . '">';
+    }
+
+    $icon = category_icon($categorySlug);
+    $gradClass = 'grad-' . preg_replace('/[^a-z0-9_-]/', '', strtolower($categorySlug));
+    $typeLabel = strtoupper($type);
+
+    return '
+    <div class="card-art-cover ' . e($gradClass) . '">
+        <div class="card-art-pattern"></div>
+        <div class="card-art-badge">' . e($typeLabel) . '</div>
+        <div class="card-art-center">
+            <span class="card-art-icon">' . $icon . '</span>
+            <span class="card-art-cat">' . e($categoryName) . '</span>
+        </div>
+    </div>';
+}
+
+function render_breadcrumbs(array $crumbs): string
+{
+    if (empty($crumbs)) {
+        return '';
+    }
+    $html = '<nav aria-label="breadcrumb" class="mb-3"><ol class="breadcrumb glass-breadcrumb mb-0">';
+    $total = count($crumbs);
+    $i = 0;
+    foreach ($crumbs as $label => $link) {
+        $i++;
+        if ($i === $total || $link === null) {
+            $html .= '<li class="breadcrumb-item active" aria-current="page">' . e($label) . '</li>';
+        } else {
+            $html .= '<li class="breadcrumb-item"><a href="' . e(url($link)) . '">' . e($label) . '</a></li>';
+        }
+    }
+    $html .= '</ol></nav>';
+    return $html;
+}
+
