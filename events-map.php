@@ -1,0 +1,1 @@
+<?php $placeholder_title = 'Event Map'; require __DIR__ . '/includes/placeholder.php';

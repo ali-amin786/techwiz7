@@ -1,0 +1,22 @@
+Fan Hub Plus — ReadMe (Section A foundation)
+
+STACK
+Native PHP 8.x (no Laravel/framework), MySQL/MariaDB via PDO prepared statements, Bootstrap 5.3 grid/offcanvas, custom Drameeo CSS, vanilla JavaScript.
+
+Native PHP was chosen so routing, sessions, and queries stay visible line-by-line for evaluation (SRS 1.8 lists Laravel as an accepted option; this is a deliberate deviation).
+
+INSTALL (XAMPP)
+1. Copy this folder to C:\xampp\htdocs\funhub
+2. Start Apache + MySQL
+3. Import sql/schema.sql (phpMyAdmin or mysql CLI)
+4. Open http://localhost/funhub/
+
+CREDENTIALS
+Admin: admin@fanhub.com / admin123
+User:  user@fanhub.com / user123
+
+PASSWORD RESET
+Localhost debug-banner mode (no SMTP). forgot-password.php prints the reset URL on the same page.
+
+AI TOOLS
+Cursor / Grok used to scaffold files from the master plan. Review and understand every file before defense.

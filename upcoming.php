@@ -1,0 +1,1 @@
+<?php $placeholder_title = 'Upcoming Releases'; require __DIR__ . '/includes/placeholder.php';

@@ -1,0 +1,1 @@
+<?php $placeholder_title = 'Merch Showcase'; require __DIR__ . '/includes/placeholder.php';

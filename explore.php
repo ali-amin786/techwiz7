@@ -1,0 +1,1 @@
+<?php $placeholder_title = 'Explore'; require __DIR__ . '/includes/placeholder.php';
